@@ -1,5 +1,6 @@
 pub mod vm;
 pub mod repl;
+pub mod assembler;
 
 fn main() {
     let mut repl = repl::REPL::new();
