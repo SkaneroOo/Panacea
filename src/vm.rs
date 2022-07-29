@@ -22,22 +22,22 @@ pub enum Opcode {
 impl From<u8> for Opcode {
     fn from(v: u8) -> Opcode {
         match v {
-            1 => Opcode::LOAD,
-            2 => Opcode::ADD,
-            3 => Opcode::SUB,
-            4 => Opcode::MUL,
-            5 => Opcode::DIV,
-            6 => Opcode::HLT,
-            7 => Opcode::JMP,
-            8 => Opcode::JMPF,
-            9 => Opcode::JMPB,
-            10 => Opcode::EQ,
-            11 => Opcode::NEQ,
-            12 => Opcode::GT,
-            13 => Opcode::LT,
-            14 => Opcode::GTQ,
-            15 => Opcode::LTQ,
-            16 => Opcode::JMPE,
+            0 => Opcode::LOAD,
+            1 => Opcode::ADD,
+            2 => Opcode::SUB,
+            3 => Opcode::MUL,
+            4 => Opcode::DIV,
+            5 => Opcode::HLT,
+            6 => Opcode::JMP,
+            7 => Opcode::JMPF,
+            8 => Opcode::JMPB,
+            9 => Opcode::EQ,
+            10 => Opcode::NEQ,
+            11 => Opcode::GT,
+            12 => Opcode::LT,
+            13 => Opcode::GTQ,
+            14 => Opcode::LTQ,
+            15 => Opcode::JMPE,
             _ => Opcode::IGL
         }
     }
@@ -56,9 +56,9 @@ impl Instruction {
 }
 
 pub struct VM {
-    registers: [i32; 32],
+    pub registers: [i32; 32],
     pc: usize,
-    program: Vec<u8>,
+    pub program: Vec<u8>,
     reminder: u32,
     equal_flag: bool
 }
@@ -72,6 +72,10 @@ impl VM {
             reminder: 0,
             equal_flag: false,
         }
+    }
+
+    pub fn add_byte(&mut self, byte: u8) {
+        self.program.push(byte);
     }
 
     fn decode_opcode(&mut self) -> Opcode {
