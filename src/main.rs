@@ -7,4 +7,4 @@ fn main() {
     repl.run();
 }
 
-// https://blog.subnetzero.io/post/building-language-vm-part-08/
+// https://blog.subnetzero.io/post/building-language-vm-part-09/
