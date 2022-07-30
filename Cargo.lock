@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "lang_project"
-version = "0.1.0"
-dependencies = [
- "nom",
-]
-
-[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -23,6 +16,13 @@ checksum = "2ad2a91a8e869eeb30b9cb3119ae87773a8f4ae617f41b1eb9c154b2905f7bd6"
 dependencies = [
  "memchr",
  "version_check",
+]
+
+[[package]]
+name = "panacea"
+version = "0.1.0"
+dependencies = [
+ "nom",
 ]
 
 [[package]]

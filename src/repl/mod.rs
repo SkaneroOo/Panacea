@@ -30,7 +30,7 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        println!("Rustlang Project REPL");
+        println!("Panacea REPL");
         loop {
             let mut buffer = String::new();
             let stdin = io::stdin();

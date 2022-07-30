@@ -1,7 +1,7 @@
-Rustlang Project  
+Panacea Project  
 ---
 ### What it is?
-Rustlang Project is project aiming to create programming language compiling
+Panacea Project is project aiming to create programming language compiling
 to custom binary file interpreted by virtual machine written in Rust programming language.
 
 ### Why?
