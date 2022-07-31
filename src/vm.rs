@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq)]
+use nom::types::CompleteStr;
+
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Opcode {
     LOAD,
     ADD,
@@ -13,32 +15,59 @@ pub enum Opcode {
     NEQ,
     GT,
     LT,
-    GTQ,
-    LTQ,
+    GTE,
+    LTE,
     JMPE,
+    NOP,
     IGL
 }
 
 impl From<u8> for Opcode {
     fn from(v: u8) -> Opcode {
         match v {
-            1 => Opcode::LOAD,
-            2 => Opcode::ADD,
-            3 => Opcode::SUB,
-            4 => Opcode::MUL,
-            5 => Opcode::DIV,
-            6 => Opcode::HLT,
-            7 => Opcode::JMP,
-            8 => Opcode::JMPF,
-            9 => Opcode::JMPB,
-            10 => Opcode::EQ,
-            11 => Opcode::NEQ,
-            12 => Opcode::GT,
-            13 => Opcode::LT,
-            14 => Opcode::GTQ,
-            15 => Opcode::LTQ,
-            16 => Opcode::JMPE,
+            0 => Opcode::LOAD,
+            1 => Opcode::ADD,
+            2 => Opcode::SUB,
+            3 => Opcode::MUL,
+            4 => Opcode::DIV,
+            5 => Opcode::HLT,
+            6 => Opcode::JMP,
+            7 => Opcode::JMPF,
+            8 => Opcode::JMPB,
+            9 => Opcode::EQ,
+            10 => Opcode::NEQ,
+            11 => Opcode::GT,
+            12 => Opcode::LT,
+            13 => Opcode::GTE,
+            14 => Opcode::LTE,
+            15 => Opcode::JMPE,
+            16 => Opcode::NOP,
             _ => Opcode::IGL
+        }
+    }
+}
+
+impl<'a> From<CompleteStr<'a>> for Opcode {
+    fn from(v: CompleteStr<'a>) -> Self {
+        match v {
+            CompleteStr("load") => Opcode::LOAD,
+            CompleteStr("add") => Opcode::ADD,
+            CompleteStr("sub") => Opcode::SUB,
+            CompleteStr("mul") => Opcode::MUL,
+            CompleteStr("div") => Opcode::DIV,
+            CompleteStr("hlt") => Opcode::HLT,
+            CompleteStr("jmp") => Opcode::JMP,
+            CompleteStr("jmpf") => Opcode::JMPF,
+            CompleteStr("jmpb") => Opcode::JMPB,
+            CompleteStr("eq") => Opcode::EQ,
+            CompleteStr("neq") => Opcode::NEQ,
+            CompleteStr("gte") => Opcode::GTE,
+            CompleteStr("gt") => Opcode::GT,
+            CompleteStr("lte") => Opcode::LTE,
+            CompleteStr("lt") => Opcode::LT,
+            CompleteStr("jmpe") => Opcode::JMPE,
+            CompleteStr("nop") => Opcode::NOP,
+            _ => Opcode::IGL,
         }
     }
 }
@@ -159,7 +188,7 @@ impl VM {
                 self.equal_flag = register1 > register2;
                 self.next_8_bits();
             }
-            Opcode::GTQ => {
+            Opcode::GTE => {
                 let register1 = self.registers[self.next_8_bits() as usize];
                 let register2 = self.registers[self.next_8_bits() as usize];
                 self.equal_flag = register1 >= register2;
@@ -171,7 +200,7 @@ impl VM {
                 self.equal_flag = register1 < register2;
                 self.next_8_bits();
             }
-            Opcode::LTQ => {
+            Opcode::LTE => {
                 let register1 = self.registers[self.next_8_bits() as usize];
                 let register2 = self.registers[self.next_8_bits() as usize];
                 self.equal_flag = register1 <= register2;
@@ -184,6 +213,9 @@ impl VM {
                 } else {
                     self.pc += 3;
                 }
+            }
+            Opcode::NOP => {
+                self.pc += 3;
             }
             _ => {
                 println!("Unknown opcode");
@@ -224,7 +256,7 @@ mod tests {
     #[test]
     fn test_opcode_hlt() {
         let mut test_vm = VM::new();
-        let test_bytes = vec![6,0,0,0];
+        let test_bytes = vec![5,0,0,0];
         test_vm.program = test_bytes;
         test_vm.run_once();
         assert_eq!(test_vm.pc, 1);
@@ -242,7 +274,7 @@ mod tests {
     #[test]
     fn test_opcode_load() {
         let mut test_vm = VM::new();
-        test_vm.program = vec![1,0,1,244];
+        test_vm.program = vec![0,0,1,244];
         test_vm.run();
         assert_eq!(test_vm.registers[0], 500);
     }
@@ -250,7 +282,7 @@ mod tests {
     #[test]
     fn test_opcode_add() {
         let mut test_vm = VM::new();
-        test_vm.program = vec![1,0,1,244,1,1,1,244,2,0,1,2];
+        test_vm.program = vec![0,0,1,244,0,1,1,244,1,0,1,2];
         test_vm.run();
         assert_eq!(test_vm.registers[2], 1000);
     }
@@ -258,7 +290,7 @@ mod tests {
     #[test]
     fn test_opcode_jmp() {
         let mut test_vm = VM::new();
-        test_vm.program = vec![1,0,0,69,7,0,0,0];
+        test_vm.program = vec![0,0,0,69,6,0,0,0];
         test_vm.run_once();
         test_vm.run_once();
         assert_eq!(test_vm.pc, 69);
@@ -267,7 +299,7 @@ mod tests {
     #[test]
     fn test_opcode_jmpf() {
         let mut test_vm = VM::new();
-        test_vm.program = vec![1,0,0,3,8,0,0,0];
+        test_vm.program = vec![0,0,0,3,7,0,0,0];
         test_vm.run_once();
         test_vm.run_once();
         assert_eq!(test_vm.pc, 9);
@@ -276,7 +308,7 @@ mod tests {
     #[test]
     fn test_opcode_jmpb() {
         let mut test_vm = VM::new();
-        test_vm.program = vec![1,0,0,3,9,0,0,0];
+        test_vm.program = vec![0,0,0,3,8,0,0,0];
         test_vm.run_once();
         test_vm.run_once();
         assert_eq!(test_vm.pc, 3);

@@ -3,6 +3,7 @@ use std::io;
 use std::io::Write;
 use std::num::ParseIntError;
 use crate::vm::VM;
+use crate::assembler::program_parser::program;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -39,6 +40,7 @@ impl REPL {
             io::stdout().flush().expect("Unable to flush stdout buffer");
 
             stdin.read_line(&mut buffer).expect("Unable to read line from user");
+            buffer.make_ascii_lowercase();
             let buffer = buffer.trim();
             self.command_buffer.push(buffer.to_string());
             match buffer {
@@ -78,8 +80,16 @@ impl REPL {
                                 self.vm.add_byte(byte);
                             }
                         },
-                        Err(_e) => {
-                            println!("Invalid command or hex string!")
+                        Err(_) => {
+                            let mut program = match program(buffer.into()) {
+                                Ok((_, program)) => program,
+                                Err(_) => {
+                                println!("Unable to parse input");
+                                continue;
+                                }
+                            };
+
+                            self.vm.program.append(&mut program.to_bytes());
                         }
                     }
                 }
