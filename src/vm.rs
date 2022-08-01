@@ -19,6 +19,9 @@ pub enum Opcode {
     LTE,
     JMPE,
     NOP,
+    ALOC,
+    INC,
+    DEC,
     IGL
 }
 
@@ -42,6 +45,9 @@ impl From<u8> for Opcode {
             14 => Opcode::LTE,
             15 => Opcode::JMPE,
             16 => Opcode::NOP,
+            17 => Opcode::ALOC,
+            18 => Opcode::INC,
+            19 => Opcode::DEC,
             _ => Opcode::IGL
         }
     }
@@ -67,6 +73,9 @@ impl<'a> From<CompleteStr<'a>> for Opcode {
             CompleteStr("lt") => Opcode::LT,
             CompleteStr("jmpe") => Opcode::JMPE,
             CompleteStr("nop") => Opcode::NOP,
+            CompleteStr("aloc") => Opcode::ALOC,
+            CompleteStr("inc") => Opcode::INC,
+            CompleteStr("dec") => Opcode::DEC,
             _ => Opcode::IGL,
         }
     }
@@ -88,6 +97,7 @@ pub struct VM {
     pub registers: [i32; 32],
     pc: usize,
     pub program: Vec<u8>,
+    heap: Vec<u8>,
     reminder: u32,
     equal_flag: bool
 }
@@ -98,6 +108,7 @@ impl VM {
             registers: [0; 32],
             pc: 0,
             program: vec![],
+            heap: vec![],
             reminder: 0,
             equal_flag: false,
         }
@@ -157,6 +168,8 @@ impl VM {
             },
             Opcode::HLT => {
                 println!("HLT");
+                self.pc += 3;
+                return true;
             },
             Opcode::JMP => {
                 let target = self.registers[self.next_8_bits() as usize];
@@ -217,8 +230,26 @@ impl VM {
             Opcode::NOP => {
                 self.pc += 3;
             }
-            _ => {
-                println!("Unknown opcode");
+            Opcode::ALOC => {
+                let register = self.next_8_bits() as usize;
+                let bytes = self.registers[register];
+                let new_end = self.heap.len() as i32 + bytes;
+                self.heap.resize(new_end as usize, 0);
+            }
+            Opcode::INC => {
+                let register = self.next_8_bits() as usize;
+                self.registers[register] += 1;
+                self.next_16_bits();
+            }
+            Opcode::DEC => {
+                let register = self.next_8_bits() as usize;
+                self.registers[register] -= 1;
+                self.next_16_bits();
+            }
+            Opcode::IGL => {
+                println!("Illegal instruction");
+                self.pc += 3;
+                return true;
             }
         }
         false
@@ -312,5 +343,14 @@ mod tests {
         test_vm.run_once();
         test_vm.run_once();
         assert_eq!(test_vm.pc, 3);
+    }
+
+    #[test]
+    fn test_opcode_aloc() {
+        let mut test_vm = VM::new();
+        test_vm.program = vec![0,0,4,0,17,0,0,0];
+        test_vm.run_once();
+        test_vm.run_once();
+        assert_eq!(test_vm.heap.len(), 1024);
     }
 }

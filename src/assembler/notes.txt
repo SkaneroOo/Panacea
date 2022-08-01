@@ -1,0 +1,17 @@
+Bytecode format:
+
+    0-63 ELF header
+        4 bytes: magic numbers [0x50, 0x41, 0x53, 0x4D]
+        1 byte: version byte (for now always 1)
+
+    64-71 code start section
+
+    72-199 DATA section
+
+Labels:
+
+    ::label_name => section label declaration
+
+    label_name-> .asciiz "Hello world" => variable label declaration
+
+    =label_name => accessing label
