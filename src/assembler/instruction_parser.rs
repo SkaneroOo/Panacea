@@ -1,8 +1,7 @@
 use crate::assembler::{
     Token, 
     opcode_parser::*, 
-    operand_parser::integer_operand,
-    register_parser::register
+    operand_parser::operand
 };
 
 use nom::types::CompleteStr;
@@ -62,18 +61,21 @@ impl AssemblerInstruction {
 
 named!(pub instruction<CompleteStr, AssemblerInstruction>,
     do_parse!(
-        o: opcode >>
-        opt!(multispace) >>
+        op: opcode >>
+        o1: opt!(operand) >>
+        o2: opt!(operand) >>
+        o3: opt!(operand) >>
         (
             AssemblerInstruction{
-                opcode: o,
-                operand1: None,
-                operand2: None,
-                operand3: None,
+                opcode: op,
+                operand1: o1,
+                operand2: o2,
+                operand3: o3,
             }
         )
     )
 );
+
 
 #[cfg(test)]
 mod tests {
@@ -81,8 +83,8 @@ mod tests {
     use crate::vm::Opcode;
 
     #[test]
-    fn test_parse_instruction_form_one() {
-        let result = instruction(CompleteStr("hlt\n"));
+    fn test_parse_single_instruction() {
+        let result = instruction(CompleteStr("hlt"));
         assert_eq!(
             result,
             Ok((
@@ -91,6 +93,23 @@ mod tests {
                     opcode: Token::Op { code: Opcode::HLT },
                     operand1: None,
                     operand2: None,
+                    operand3: None
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_instruction_with_parameters() {
+        let result = instruction(CompleteStr("load $0 #100\n"));
+        assert_eq!(
+            result,
+            Ok((
+                CompleteStr(""),
+                AssemblerInstruction {
+                    opcode: Token::Op { code: Opcode::LOAD },
+                    operand1: Some(Token::Register { reg_num: 0 }),
+                    operand2: Some(Token::IntegerOperand { value: 100 }),
                     operand3: None
                 }
             ))
