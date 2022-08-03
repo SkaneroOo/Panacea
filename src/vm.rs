@@ -82,6 +82,7 @@ impl<'a> From<CompleteStr<'a>> for Opcode {
 }
 
 pub struct Instruction {
+    #[allow(dead_code)]
     opcode: Opcode
 }
 
